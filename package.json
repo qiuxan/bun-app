@@ -4,11 +4,14 @@
   "type": "module",
   "private": true,
   "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "bun run index.ts"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1"
   },
   "peerDependencies": {
     "typescript": "^5"
   }
-  
 }
