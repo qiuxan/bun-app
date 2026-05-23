@@ -31,16 +31,19 @@ app.get('/api/hello', (req: Request, res: Response) => {
    res.json({ message: 'Hello, World!' });
 });
 
-app.post('/api/chat', express.json(), async (req: Request, res: Response) => {
-   const { prompt } = req.body;
+const conversations = new Map<string, string>();
 
+app.post('/api/chat', express.json(), async (req: Request, res: Response) => {
+   const { prompt, conversationID } = req.body;
    const response = await client.responses.create({
       model: 'gpt-4o-mini',
       input: prompt,
       temperature: 0.2,
       max_output_tokens: 100,
+      previous_response_id: conversations.get(conversationID),
    });
 
+   conversations.set(conversationID, response.id);
    res.json({ response: response.output_text });
 });
 
