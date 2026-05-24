@@ -2,6 +2,7 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import z from 'zod';
 
 dotenv.config();
 
@@ -32,8 +33,23 @@ app.get('/api/hello', (req: Request, res: Response) => {
 });
 
 const conversations = new Map<string, string>();
+const ChatRequestSchema = z.object({
+   prompt: z
+      .string()
+      .trim()
+      .min(1, 'Prompt cannot be empty')
+      .max(1000, 'Prompt cannot exceed 1000 characters'),
+   conversationID: z.uuid(),
+});
 
 app.post('/api/chat', express.json(), async (req: Request, res: Response) => {
+   const parseResult = ChatRequestSchema.safeParse(req.body);
+
+   if (!parseResult.success) {
+      res.status(400).json({ error: z.treeifyError(parseResult.error) });
+      return;
+   }
+
    const { prompt, conversationID } = req.body;
    const response = await client.responses.create({
       model: 'gpt-4o-mini',
