@@ -50,17 +50,23 @@ app.post('/api/chat', express.json(), async (req: Request, res: Response) => {
       return;
    }
 
-   const { prompt, conversationID } = req.body;
-   const response = await client.responses.create({
-      model: 'gpt-4o-mini',
-      input: prompt,
-      temperature: 0.2,
-      max_output_tokens: 100,
-      previous_response_id: conversations.get(conversationID),
-   });
+   try {
+      const { prompt, conversationID } = req.body;
+      const response = await client.responses.create({
+         model: 'gpt-4o-mini',
+         input: prompt,
+         temperature: 0.2,
+         max_output_tokens: 100,
+         previous_response_id: conversations.get(conversationID),
+      });
 
-   conversations.set(conversationID, response.id);
-   res.json({ response: response.output_text });
+      conversations.set(conversationID, response.id);
+      res.json({ response: response.output_text });
+   } catch (error) {
+      console.error('Error processing chat request:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+   }
 });
 
 app.listen(port, () => {
