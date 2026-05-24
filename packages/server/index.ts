@@ -1,24 +1,10 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
 import z from 'zod';
-import { conversationRepository } from './repositories/conversation.repository';
+import { chatService } from './service/chat.service';
 
 dotenv.config();
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!OPENAI_API_KEY) {
-   console.error(
-      'Error: OPENAI_API_KEY is not set in the environment variables.'
-   );
-   process.exit(1);
-}
-
-const client = new OpenAI({
-   apiKey: OPENAI_API_KEY,
-});
 
 const app = express();
 app.use(express.json());
@@ -52,17 +38,8 @@ app.post('/api/chat', express.json(), async (req: Request, res: Response) => {
 
    try {
       const { prompt, conversationID } = req.body;
-      const response = await client.responses.create({
-         model: 'gpt-4o-mini',
-         input: prompt,
-         temperature: 0.2,
-         max_output_tokens: 100,
-         previous_response_id:
-            conversationRepository.getPreviousResponseId(conversationID),
-      });
-
-      conversationRepository.setPreviousResponseId(conversationID, response.id);
-      res.json({ response: response.output_text });
+      const response = await chatService.sendMessage(prompt, conversationID);
+      res.json({ response: response.message });
    } catch (error) {
       console.error('Error processing chat request:', error);
       res.status(500).json({ error: 'Internal Server Error' });
