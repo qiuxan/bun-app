@@ -20,17 +20,20 @@ type ChatMessage = {
 
 const ChatBot = () => {
    const [messages, setMessages] = useState<ChatMessage[]>([]);
+   const [isBotTyping, setIsBotTyping] = useState(false);
    const conversationID = useRef(crypto.randomUUID());
    const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
    const onSubmit = async ({ prompt }: FormData) => {
       setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
+      setIsBotTyping(true);
       reset();
       const { data } = await axios.post<ChatResponse>('/api/chat', {
          prompt,
          conversationID: conversationID.current,
       });
       setMessages((prev) => [...prev, { content: data.response, role: 'bot' }]);
+      setIsBotTyping(false);
    };
 
    const onKyeDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -57,6 +60,15 @@ const ChatBot = () => {
                   <ReactMarkdown>{message.content}</ReactMarkdown>
                </p>
             ))}
+            {isBotTyping && (
+               <p className="px-4 py-2 rounded-xl max-w-[80%] bg-gray-300 text-gray-800 self-start">
+                  <span className="inline-flex items-center gap-1">
+                     <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" />
+                     <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-150" />
+                     <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-300" />
+                  </span>
+               </p>
+            )}
          </div>
          <form
             className="flex flex-col gap-2 items-end border-2 p-4 rounded-3xl"
