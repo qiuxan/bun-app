@@ -21,6 +21,7 @@ type ChatMessage = {
 const ChatBot = () => {
    const [messages, setMessages] = useState<ChatMessage[]>([]);
    const [isBotTyping, setIsBotTyping] = useState(false);
+   const [error, setError] = useState('');
    const conversationID = useRef(crypto.randomUUID());
    const { register, handleSubmit, reset, formState } = useForm<FormData>();
    const lastMessageRef = useRef<HTMLDivElement | null>(null);
@@ -28,13 +29,23 @@ const ChatBot = () => {
    const onSubmit = async ({ prompt }: FormData) => {
       setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
       setIsBotTyping(true);
+
+      setError('');
       reset({ prompt: '' });
-      const { data } = await axios.post<ChatResponse>('/api/chat', {
-         prompt,
-         conversationID: conversationID.current,
-      });
-      setMessages((prev) => [...prev, { content: data.response, role: 'bot' }]);
-      setIsBotTyping(false);
+      try {
+         const { data } = await axios.post<ChatResponse>('/api/chat', {
+            prompt,
+            conversationID: conversationID.current,
+         });
+         setMessages((prev) => [
+            ...prev,
+            { content: data.response, role: 'bot' },
+         ]);
+      } catch (err) {
+         setError('Failed to fetch response. Please try again.');
+      } finally {
+         setIsBotTyping(false);
+      }
    };
 
    const onKyeDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -83,6 +94,11 @@ const ChatBot = () => {
                      <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-150" />
                      <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-300" />
                   </span>
+               </div>
+            )}
+            {error && (
+               <div className="px-4 py-2 rounded-xl max-w-[80%] bg-red-300 text-red-800 self-start">
+                  {error}
                </div>
             )}
          </div>
