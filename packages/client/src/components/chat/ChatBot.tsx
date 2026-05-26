@@ -1,14 +1,9 @@
-import { Button } from '../ui/button';
 import axios from 'axios';
-import { FaArrowUp } from 'react-icons/fa';
-import { useForm } from 'react-hook-form';
 import { useRef, useState } from 'react';
 import ChatMessages, { type ChatMessage } from './ChatMessages';
 import TypingIndicator from './TypingIndicator';
-
-type FormData = {
-   prompt: string;
-};
+import ChatInput from './ChatInput';
+import type { ChatInputFormData } from './ChatInput';
 
 type ChatResponse = {
    response: string;
@@ -19,14 +14,12 @@ const ChatBot = () => {
    const [isBotTyping, setIsBotTyping] = useState(false);
    const [error, setError] = useState('');
    const conversationID = useRef(crypto.randomUUID());
-   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
-   const onSubmit = async ({ prompt }: FormData) => {
+   const onSubmit = async ({ prompt }: ChatInputFormData) => {
       setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
       setIsBotTyping(true);
 
       setError('');
-      reset({ prompt: '' });
       try {
          const { data } = await axios.post<ChatResponse>('/api/chat', {
             prompt,
@@ -43,13 +36,6 @@ const ChatBot = () => {
       }
    };
 
-   const onKyeDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-         e.preventDefault();
-         handleSubmit(onSubmit)();
-      }
-   };
-
    return (
       <div className="flex flex-col h-full">
          <div className="flex flex-col flex-1 gap-4 mb-10 overflow-y-auto">
@@ -61,29 +47,7 @@ const ChatBot = () => {
                </div>
             )}
          </div>
-         <form
-            className="flex flex-col gap-2 items-end border-2 p-4 rounded-3xl"
-            onSubmit={handleSubmit(onSubmit)}
-            onKeyDown={onKyeDown}
-         >
-            <textarea
-               autoFocus
-               {...register('prompt', {
-                  required: true,
-                  validate: (value) => value.trim() !== '',
-               })}
-               className="border-0 focus:outline-none p-2 w-full resize-none"
-               placeholder="Type your message here..."
-               maxLength={1000}
-            />
-            <Button
-               type="submit"
-               className="rounded-full w-10 h-10 p-0"
-               disabled={!formState.isValid}
-            >
-               <FaArrowUp />
-            </Button>
-         </form>
+         <ChatInput onSubmit={onSubmit} />
       </div>
    );
 };
