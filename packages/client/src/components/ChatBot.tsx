@@ -55,6 +55,13 @@ const ChatBot = () => {
          <div className="flex flex-col gap-4 mb-10">
             {messages.map((message, index) => (
                <p
+                  onCopy={(e) => {
+                     const selection = window.getSelection()?.toString().trim();
+                     if (selection) {
+                        e.clipboardData.setData('text/plain', selection);
+                        e.preventDefault();
+                     }
+                  }}
                   key={index}
                   className={`
                      px-4 py-2 rounded-xl max-w-[80%] 
