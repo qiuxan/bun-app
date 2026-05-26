@@ -23,12 +23,12 @@ const ChatBot = () => {
    const [isBotTyping, setIsBotTyping] = useState(false);
    const conversationID = useRef(crypto.randomUUID());
    const { register, handleSubmit, reset, formState } = useForm<FormData>();
-   const formRef = useRef<HTMLFormElement | null>(null);
+   const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
    const onSubmit = async ({ prompt }: FormData) => {
       setMessages((prev) => [...prev, { content: prompt, role: 'user' }]);
       setIsBotTyping(true);
-      reset();
+      reset({ prompt: '' });
       const { data } = await axios.post<ChatResponse>('/api/chat', {
          prompt,
          conversationID: conversationID.current,
@@ -45,24 +45,26 @@ const ChatBot = () => {
    };
 
    useEffect(() => {
-      if (formRef.current) {
-         formRef.current.scrollIntoView({ behavior: 'smooth' });
+      if (lastMessageRef.current) {
+         lastMessageRef.current.scrollIntoView({ behavior: 'smooth' });
       }
    }, [messages]);
 
+   const onCopySelection = (e: React.ClipboardEvent) => {
+      const selection = window.getSelection()?.toString().trim();
+      if (selection) {
+         e.clipboardData.setData('text/plain', selection);
+         e.preventDefault();
+      }
+   };
    return (
-      <div>
-         <div className="flex flex-col gap-4 mb-10">
+      <div className="flex flex-col h-full">
+         <div className="flex flex-col flex-1 gap-4 mb-10 overflow-y-auto">
             {messages.map((message, index) => (
-               <p
-                  onCopy={(e) => {
-                     const selection = window.getSelection()?.toString().trim();
-                     if (selection) {
-                        e.clipboardData.setData('text/plain', selection);
-                        e.preventDefault();
-                     }
-                  }}
+               <div
+                  onCopy={onCopySelection}
                   key={index}
+                  ref={index === messages.length - 1 ? lastMessageRef : null}
                   className={`
                      px-4 py-2 rounded-xl max-w-[80%] 
                      ${
@@ -72,25 +74,25 @@ const ChatBot = () => {
                      }`}
                >
                   <ReactMarkdown>{message.content}</ReactMarkdown>
-               </p>
+               </div>
             ))}
             {isBotTyping && (
-               <p className="px-4 py-2 rounded-xl max-w-[80%] bg-gray-300 text-gray-800 self-start">
+               <div className="px-4 py-2 rounded-xl max-w-[80%] bg-gray-300 text-gray-800 self-start">
                   <span className="inline-flex items-center gap-1">
                      <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse" />
                      <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-150" />
                      <span className="h-2 w-2 rounded-full bg-gray-500 animate-pulse delay-300" />
                   </span>
-               </p>
+               </div>
             )}
          </div>
          <form
-            ref={formRef}
             className="flex flex-col gap-2 items-end border-2 p-4 rounded-3xl"
             onSubmit={handleSubmit(onSubmit)}
             onKeyDown={onKyeDown}
          >
             <textarea
+               autoFocus
                {...register('prompt', {
                   required: true,
                   validate: (value) => value.trim() !== '',
