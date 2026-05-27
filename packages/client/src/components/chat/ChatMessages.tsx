@@ -35,7 +35,7 @@ const ChatMessages = ({ messages }: ChatMessagesProps) => {
                key={index}
                ref={index === messages.length - 1 ? lastMessageRef : null}
                className={`
-							px-4 py-2 rounded-xl max-w-[80%] 
+							px-4 py-2 rounded-xl max-w-md
 							${
                         message.role === 'user'
                            ? 'bg-blue-500 text-white self-end'
