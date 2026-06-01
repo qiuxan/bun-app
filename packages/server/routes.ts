@@ -15,3 +15,8 @@ routes.get('/api/hello', (_req, res) => {
 routes.post('/api/chat', chatController.sendMessage);
 
 routes.get('/api/products/:id/reviews', reviewController.getReviews);
+
+routes.post(
+   '/api/products/:id/reviews/summarize',
+   reviewController.summarizeReviews
+);

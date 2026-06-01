@@ -13,10 +13,11 @@ const adapter = new PrismaMariaDb(databaseUrl);
 const prisma = new PrismaClient({ adapter });
 
 export const reviewRepository = {
-   async getReviewsByProductId(productId: number) {
+   async getReviewsByProductId(productId: number, limit?: number) {
       return prisma.review.findMany({
          where: { productId },
          orderBy: { createdAt: 'desc' },
+         take: limit,
       });
    },
 };
