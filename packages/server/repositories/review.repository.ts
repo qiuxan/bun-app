@@ -1,6 +1,7 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import prismaConfig from '../prisma.config';
 import { PrismaClient } from '../generated/prisma/client';
+import dayjs from 'dayjs';
 
 const databaseUrl = prismaConfig.datasource?.url;
 
@@ -18,6 +19,18 @@ export const reviewRepository = {
          where: { productId },
          orderBy: { createdAt: 'desc' },
          take: limit,
+      });
+   },
+
+   async storeReview(productId: number, content: string) {
+      const now = new Date();
+      const expiresAt = dayjs(now).add(7, 'day').toDate();
+      const data = { content, expiresAt, generatedAt: now, productId };
+
+      return prisma.summary.upsert({
+         where: { productId },
+         create: data,
+         update: data,
       });
    },
 };

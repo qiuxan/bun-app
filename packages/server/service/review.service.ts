@@ -21,13 +21,15 @@ export const reviewService = {
       const prompt = reviewTemplate.replace('{{joinedReviews}}', joinedReviews);
 
       //   return prompt;
-      const response = await llmClient.generateText({
+      const { message: summary } = await llmClient.generateText({
          model: 'gpt-4o-mini',
          prompt,
          temperature: 0.2,
          max_output_tokens: 200,
       });
 
-      return response.message;
+      await reviewRepository.storeReview(productId, summary);
+
+      return summary;
    },
 };
