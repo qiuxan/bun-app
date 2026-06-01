@@ -14,8 +14,19 @@ export const reviewController = {
       }
 
       try {
-         const reviews = await reviewService.getReviewsByProductId(productId);
-         res.json(reviews);
+         const product = await productRepository.getProductById(productId);
+
+         if (!product) {
+            res.status(404).json({ error: 'Product not found' });
+            return;
+         }
+
+         const reviews =
+            await reviewRepository.getReviewsByProductId(productId);
+         const summary =
+            await reviewRepository.getSummaryByProductId(productId);
+
+         res.json({ reviews, summary });
       } catch (error) {
          console.error('Error fetching reviews:', error);
          res.status(500).json({ error: 'Failed to fetch reviews' });
