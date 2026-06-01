@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { reviewService } from '../service/review.service';
 import { reviewRepository } from '../repositories/review.repository';
+import { productRepository } from '../repositories/product.repository';
 
 export const reviewController = {
    async getReviews(req: Request, res: Response) {
@@ -23,6 +24,24 @@ export const reviewController = {
 
    async summarizeReviews(req: Request, res: Response) {
       const id = req.params.id as string;
+
+      const product = await productRepository.getProductById(parseInt(id, 10));
+
+      if (!product) {
+         res.status(404).json({ error: 'Product not found' });
+         return;
+      }
+
+      const reviews = await reviewRepository.getReviewsByProductId(
+         parseInt(id, 10),
+         1
+      );
+
+      if (!reviews.length) {
+         res.status(404).json({ error: 'No reviews found for this product' });
+         return;
+      }
+
       const productId = parseInt(id, 10);
 
       if (isNaN(productId)) {
