@@ -28,24 +28,11 @@ type SummarizeReviewsResponse = {
 };
 
 const ReviewList = ({ productId }: Props) => {
-   //    const [summary, setSummary] = useState('');
-   //    const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-   //    const [summaryError, setSummaryError] = useState('');
-
-   const {
-      mutate: handleSummarize,
-      isPending: isSummaryLoading,
-      error: summaryError,
-      data: summaryResponse,
-   } = useMutation<SummarizeReviewsResponse>({
+   const summarizeMutation = useMutation<SummarizeReviewsResponse>({
       mutationFn: async () => summarize(),
    });
 
-   const {
-      data: reviewData,
-      isLoading,
-      error,
-   } = useQuery<GetReviewsResponse>({
+   const reviewQuery = useQuery<GetReviewsResponse>({
       queryKey: ['reviews', productId],
       queryFn: () => fetchReviews(),
    });
@@ -64,7 +51,7 @@ const ReviewList = ({ productId }: Props) => {
       return response.data;
    };
 
-   if (isLoading) {
+   if (reviewQuery.isLoading) {
       return (
          <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -79,7 +66,7 @@ const ReviewList = ({ productId }: Props) => {
       );
    }
 
-   if (error) {
+   if (reviewQuery.error) {
       return (
          <div className="text-red-500">
             Could not load reviews. Please try again later.
@@ -87,7 +74,8 @@ const ReviewList = ({ productId }: Props) => {
       );
    }
 
-   const displaySummary = summaryResponse?.summary || reviewData?.summary;
+   const displaySummary =
+      summarizeMutation.data?.summary || reviewQuery.data?.summary;
    return (
       <div>
          <div className="bm-5">
@@ -99,20 +87,20 @@ const ReviewList = ({ productId }: Props) => {
                <div>
                   <Button
                      className="cursor-pointer mb-2 inline-flex items-center gap-2 rounded-md bg-gray-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
-                     onClick={() => handleSummarize()}
-                     disabled={isSummaryLoading}
+                     onClick={() => summarizeMutation.mutate()}
+                     disabled={summarizeMutation.isPending}
                   >
                      <span className="inline-flex items-center gap-2">
                         <HiSparkles aria-hidden="true" className="h-4 w-4" />
                         <span>Summarize</span>
                      </span>
                   </Button>
-                  {isSummaryLoading && (
+                  {summarizeMutation.isPending && (
                      <div className="py-3 ">
                         <ReviewSkeleton />
                      </div>
                   )}
-                  {summaryError && (
+                  {summarizeMutation.error && (
                      <div className="text-red-500">
                         Could not summarize reviews. Please try again later.
                      </div>
@@ -122,7 +110,7 @@ const ReviewList = ({ productId }: Props) => {
          </div>
 
          <div className="flex flex-col gap-4">
-            {reviewData?.reviews.map((review) => (
+            {reviewQuery.data?.reviews.map((review) => (
                <div key={review.id} className="border p-4 rounded">
                   <div className="font-semibold">{review.author}</div>
                   <RatingDisplay rating={review.rating} />
