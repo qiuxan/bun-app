@@ -2,6 +2,8 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import RatingDisplay from './RatingDisplay';
 
+import Skeleton from 'react-loading-skeleton';
+
 type Props = {
    productId: number;
 };
@@ -21,8 +23,10 @@ type GetReviewsResponse = {
 
 const ReviewList = ({ productId }: Props) => {
    const [reviewData, setReviewData] = useState<GetReviewsResponse>();
+   const [isLoading, setIsLoading] = useState(true);
 
    const fetchReviews = async () => {
+      setIsLoading(true);
       try {
          const response = await axios.get<GetReviewsResponse>(
             `/api/products/${productId}/reviews`
@@ -30,6 +34,8 @@ const ReviewList = ({ productId }: Props) => {
          setReviewData(response.data);
       } catch (error) {
          console.error('Failed to fetch reviews:', error);
+      } finally {
+         setIsLoading(false);
       }
    };
 
@@ -37,6 +43,29 @@ const ReviewList = ({ productId }: Props) => {
       fetchReviews();
    }, [productId]);
 
+   if (isLoading) {
+      return (
+         <div className="flex flex-col gap-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+               <div
+                  key={`skeleton-review-${index}`}
+                  className="border p-4 rounded"
+               >
+                  <div className="mb-2">
+                     <Skeleton width={120} />
+                  </div>
+                  <div className="mb-2">
+                     <Skeleton width={96} />
+                  </div>
+                  <div className="mb-2 text-sm text-gray-500">
+                     <Skeleton width={140} />
+                  </div>
+                  <Skeleton count={2} />
+               </div>
+            ))}
+         </div>
+      );
+   }
    return (
       <div className="flex flex-col gap-4">
          {reviewData?.reviews.map((review) => (
