@@ -1,5 +1,9 @@
-import axios from 'axios';
 import RatingDisplay from './RatingDisplay';
+import {
+   reviewsApi,
+   type GetReviewsResponse,
+   type SummarizeReviewsResponse,
+} from './ReviewsApi';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@base-ui/react/button';
@@ -10,46 +14,15 @@ type Props = {
    productId: number;
 };
 
-type Review = {
-   id: number;
-   author: string;
-   content: string;
-   rating: number;
-   createdAt: string;
-};
-
-type GetReviewsResponse = {
-   reviews: Review[];
-   summary: string | null;
-};
-
-type SummarizeReviewsResponse = {
-   summary: string;
-};
-
 const ReviewList = ({ productId }: Props) => {
    const summarizeMutation = useMutation<SummarizeReviewsResponse>({
-      mutationFn: async () => summarize(),
+      mutationFn: () => reviewsApi.summarizeReviews(productId),
    });
 
    const reviewQuery = useQuery<GetReviewsResponse>({
       queryKey: ['reviews', productId],
-      queryFn: () => fetchReviews(),
+      queryFn: () => reviewsApi.getReviews(productId),
    });
-
-   const summarize = async () => {
-      const response = await axios.post<SummarizeReviewsResponse>(
-         `/api/products/${productId}/reviews/summarize`
-      );
-      return response.data;
-   };
-
-   const fetchReviews = async () => {
-      const response = await axios.get<GetReviewsResponse>(
-         `/api/products/${productId}/reviews`
-      );
-      return response.data;
-   };
 
    if (reviewQuery.isLoading) {
       return (
