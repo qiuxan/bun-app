@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import RatingDisplay from './RatingDisplay';
 
 import Skeleton from 'react-loading-skeleton';
 import { useQuery } from '@tanstack/react-query';
+import { Button } from '@base-ui/react/button';
+import { HiSparkles } from 'react-icons/hi2';
 
 type Props = {
    productId: number;
@@ -71,17 +72,34 @@ const ReviewList = ({ productId }: Props) => {
       );
    }
    return (
-      <div className="flex flex-col gap-4">
-         {reviewData?.reviews.map((review) => (
-            <div key={review.id} className="border p-4 rounded">
-               <div className="font-semibold">{review.author}</div>
-               <RatingDisplay rating={review.rating} />
-               <div className="text-sm text-gray-500">
-                  {new Date(review.createdAt).toLocaleDateString()}
+      <div>
+         <div className="bm-5">
+            {reviewData?.summary ? (
+               <div className="bg-gray-100 p-4 rounded mb-6">
+                  <p>{reviewData.summary}</p>
                </div>
-               <p>{review.content}</p>
-            </div>
-         ))}
+            ) : (
+               <Button className="mb-2 inline-flex items-center gap-2 rounded-md bg-gray-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2">
+                  <span className="inline-flex items-center gap-2">
+                     <HiSparkles aria-hidden="true" className="h-4 w-4" />
+                     <span>Summarize</span>
+                  </span>
+               </Button>
+            )}
+         </div>
+
+         <div className="flex flex-col gap-4">
+            {reviewData?.reviews.map((review) => (
+               <div key={review.id} className="border p-4 rounded">
+                  <div className="font-semibold">{review.author}</div>
+                  <RatingDisplay rating={review.rating} />
+                  <div className="text-sm text-gray-500">
+                     {new Date(review.createdAt).toLocaleDateString()}
+                  </div>
+                  <p>{review.content}</p>
+               </div>
+            ))}
+         </div>
       </div>
    );
 };
