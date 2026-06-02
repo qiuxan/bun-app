@@ -23,7 +23,8 @@ type GetReviewsResponse = {
 
 const ReviewList = ({ productId }: Props) => {
    const [reviewData, setReviewData] = useState<GetReviewsResponse>();
-   const [isLoading, setIsLoading] = useState(true);
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState('');
 
    const fetchReviews = async () => {
       setIsLoading(true);
@@ -34,6 +35,7 @@ const ReviewList = ({ productId }: Props) => {
          setReviewData(response.data);
       } catch (error) {
          console.error('Failed to fetch reviews:', error);
+         setError('Failed to load reviews. Please try again later.');
       } finally {
          setIsLoading(false);
       }
@@ -65,6 +67,10 @@ const ReviewList = ({ productId }: Props) => {
             ))}
          </div>
       );
+   }
+
+   if (error) {
+      return <div className="text-red-500">{error}</div>;
    }
    return (
       <div className="flex flex-col gap-4">
