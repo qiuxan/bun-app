@@ -1,7 +1,6 @@
 import axios from 'axios';
 import RatingDisplay from './RatingDisplay';
 
-import Skeleton from 'react-loading-skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@base-ui/react/button';
 import { HiSparkles } from 'react-icons/hi2';
@@ -32,6 +31,7 @@ type SummarizeReviewsResponse = {
 const ReviewList = ({ productId }: Props) => {
    const [summary, setSummary] = useState('');
    const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+   const [summaryError, setSummaryError] = useState('');
 
    const {
       data: reviewData,
@@ -44,6 +44,7 @@ const ReviewList = ({ productId }: Props) => {
 
    const handleSummarize = async () => {
       try {
+         setSummaryError('');
          setIsSummaryLoading(true);
          const response = await axios.post<SummarizeReviewsResponse>(
             `/api/products/${productId}/reviews/summarize`
@@ -51,6 +52,7 @@ const ReviewList = ({ productId }: Props) => {
          setSummary(response.data.summary);
       } catch (err) {
          console.error('Error summarizing reviews:', err);
+         setSummaryError('Error summarizing reviews. Please try again later.');
       } finally {
          setIsSummaryLoading(false);
       }
@@ -110,6 +112,9 @@ const ReviewList = ({ productId }: Props) => {
                      <div className="py-3 ">
                         <ReviewSkeleton />
                      </div>
+                  )}
+                  {summaryError && (
+                     <div className="text-red-500">{summaryError}</div>
                   )}
                </div>
             )}
