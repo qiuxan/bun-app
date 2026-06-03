@@ -65,7 +65,7 @@ export const reviewController = {
          res.json({ summary });
       } catch (error) {
          console.error('Error summarizing reviews:', error);
-         res.status(500).json({ error: 'Failed to summarize reviews' });
+         res.status(500).json({ error });
       }
    },
 };
